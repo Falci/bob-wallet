@@ -4,10 +4,11 @@ import * as remoteMain from '@electron/remote/main';
 remoteMain.initialize();
 
 let mainWindow;
+let isQuitting = false;
 
 export default function showMainWindow() {
   if (mainWindow) {
-    mainWindow.focus();
+    mainWindow.show();
     return;
   }
 
@@ -40,6 +41,17 @@ export default function showMainWindow() {
     }
   });
 
+  mainWindow.on('close', (e) => {
+    if (process.platform === 'darwin' && !isQuitting) {
+      e.preventDefault();
+      mainWindow.hide();
+    }
+  });
+  
+  electron.app.on('before-quit', () => {
+    isQuitting = true;
+  })
+  
   mainWindow.on('closed', () => {
     mainWindow = null;
 
